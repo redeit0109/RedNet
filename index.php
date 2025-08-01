@@ -261,7 +261,6 @@ document.getElementById('chatForm').addEventListener('submit', function(e) {
     }).then(() => {
         form.reset();
         document.getElementById('nickname').value = localStorage.getItem('savedNickname') || '';
-        previousContent = "";
         loadMessages();
     });
 });
