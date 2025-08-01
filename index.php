@@ -62,8 +62,13 @@ if (isset($_GET['fetch'])) {
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <meta property="og:title" content="RedNet">
+    <meta property="og:description" content="Chat without any filters & moderation">
+    <meta property="og:image" content="https://7f2173096eaf16.lhr.life/src/favicon.ico">
+    <meta property="og:url" content="https://7f2173096eaf16.lhr.life">
+    <meta property="og:type" content="website">
     <meta charset="UTF-8">
-    <p>Clearning chat : 7:00 London</p>
+    <p>Chat clearing in 7:00 London</p>
     <link rel="icon" type="image/x-icon" href="./src/favicon.ico">
     <title>RedNet</title>
     <style>
