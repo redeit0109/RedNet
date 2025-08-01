@@ -191,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     loadMessages();
-    setInterval(loadMessages, 5å00);
+    setInterval(loadMessages, 100);
 });
 
 let previousContent = "";
