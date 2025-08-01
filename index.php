@@ -2,23 +2,9 @@
 $msgFile = 'msg.txt';
 $uploadDir = 'downloads/';
 
-$targetTime = '07:00:00';
 $currentTime = date('H:i:s');
 
 date_default_timezone_set('Europe/London');
-
-if ($currentTime === $targetTime) {
-    file_put_contents($msgFile, '');
-
-    if (is_dir($uploadDir)) {
-        $files = glob($uploadDir . '/*');
-        foreach ($files as $file) {
-            if (is_file($file)) {
-                unlink($file);
-            }
-        }
-    }
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     $nickname = trim($_POST['nickname']) ?: 'Anonymous';
@@ -61,7 +47,6 @@ if (isset($_GET['fetch'])) {
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <p>Clearning in 7:00 UTC+1 every day</p>
     <link rel="icon" type="image/x-icon" href="./src/favicon.ico">
     <title>RedNet</title>
     <style>
