@@ -102,7 +102,7 @@ if (isset($_GET['fetch'])) {
         $lastLines = array_slice($lines, -12);
         echo nl2br(implode("\n", $lastLines));
     } else {
-        echo "<i>No messages.</i>";
+        echo "<h1><i>No messages.</i></h1>";
     }
     exit;
 }
