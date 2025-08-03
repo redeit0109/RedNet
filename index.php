@@ -70,7 +70,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    $nickname = $_SESSION['username'] ?? 'Anonymous';
+    if (!isset($_SESSION['username'])) {
+        http_response_code(403);
+        exit('Login required');
+    }
+    $nickname = $_SESSION['username'];
     $message = htmlspecialchars(trim($_POST['message']));
     $replyTo = isset($_POST['reply_to']) ? trim($_POST['reply_to']) : '';
     $fileText = '';
@@ -115,7 +119,6 @@ if (isset($_GET['fetch'])) {
     <link rel="icon" type="image/x-icon" href="./src/favicon.ico">
     <title>RedNet</title>
     <style>
-
        #authPopup {
              display: none;
              position: fixed;
@@ -172,8 +175,8 @@ if (isset($_GET['fetch'])) {
         }
 
         body.dark button {
-            padding: 4px 6px;
-            margin: 2.5px 2px;
+            padding: 3px 5px;
+            margin: 3px 2.5px;
             background-color: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
@@ -182,8 +185,8 @@ if (isset($_GET['fetch'])) {
         }
 
         body.dark input {
-            padding: 4px 6px;
-            margin: 2.5px 2px;
+            padding: 4.8px 7.2px;
+            margin: 3px 2.4px;
             background-color: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
@@ -201,8 +204,8 @@ if (isset($_GET['fetch'])) {
         }
 
         body button {
-            padding: 4px 6px;
-            margin: 2.5px 2px;
+            padding: 3px 5px;
+            margin: 3px 2.5px;
             background-color: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
@@ -211,8 +214,8 @@ if (isset($_GET['fetch'])) {
         }
 
         body input {
-            padding: 4px 6px;
-            margin: 2.5px 2px;
+            padding: 4.8px 7.2px;
+            margin: 3px 2.4px;
             background-color: var(--bg-color);
             color: var(--text-color);
             border: 1px solid var(--border-color);
@@ -227,7 +230,7 @@ if (isset($_GET['fetch'])) {
             word-break: break-all;
             overflow-y: auto;
             margin-bottom: 20px;
-            max-height: 440px;
+            max-height: 430px;
             max-width: 1300px;
         }
 
@@ -255,21 +258,22 @@ if (isset($_GET['fetch'])) {
 </head>
 <body>
 
-<div id="authControls"></div>
+<div id="mainApp" style="display: none;">
+    <div id="authControls"></div>
+    <button class="theme-toggle" onclick="toggleTheme()">Change theme</button>
+    <button onclick="requestNotificationPermission()">Enable notifications</button>
 
-<button class="theme-toggle" onclick="toggleTheme()">Change theme</button>
-<button onclick="requestNotificationPermission()">Enable notifications</button>
+    <div id="chat"><h1><i>Messages loading...</i></h1></div>
 
-<div id="chat"><h1><i>Messages loading...</i></h1></div>
+    <audio id="notifySound" src="./src/sound.mp3" preload="auto"></audio>
 
-<audio id="notifySound" src="./src/sound.mp3" preload="auto"></audio>
-
-<form id="chatForm" enctype="multipart/form-data">
-    <input type="hidden" name="reply_to" id="replyTo">
-    <input type="text" name="message" placeholder="Message" required autocomplete="off">
-    <input type="file" name="file">
-    <button type="submit">Send</button>
-</form>
+    <form id="chatForm" enctype="multipart/form-data">
+        <input type="hidden" name="reply_to" id="replyTo">
+        <input type="text" name="message" placeholder="Message" required autocomplete="off">
+        <input type="file" name="file">
+        <button type="submit">Send</button>
+    </form>
+</div>
 
 <script>
 function toggleTheme() {
@@ -304,19 +308,11 @@ function updateAuthControls(loggedInUser = null) {
         deleteBtn.style.marginLeft = '5px';
         deleteBtn.onclick = deleteAccount;
         container.appendChild(deleteBtn);
-    } else {
-        const loginBtn = document.createElement('button');
-        loginBtn.textContent = 'Login / Register';
-        loginBtn.onclick = showLogin;
-        container.appendChild(loginBtn);
     }
 }
 
 function showLogin() {
     document.getElementById('authPopup').style.display = 'block';
-}
-function hideLogin() {
-    document.getElementById('authPopup').style.display = 'none';
 }
 
 function submitAuth(action) {
@@ -333,7 +329,9 @@ function submitAuth(action) {
         alert(text);
         if (text.includes('Logged in') || text.includes('Registered')) {
             updateAuthControls(username);
-            hideLogin();
+            document.getElementById('authPopup').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            loadMessages();
         }
     });
 }
@@ -350,7 +348,8 @@ function deleteAccount() {
     .then(text => {
         alert(text);
         updateAuthControls(null);
-        loadMessages();
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('authPopup').style.display = 'block';
     });
 }
 
@@ -377,7 +376,22 @@ function requestNotificationPermission() {
 
 window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
-    updateAuthControls(<?php echo json_encode($loggedInUser); ?>);
+    const currentUser = <?php echo json_encode($loggedInUser); ?>;
+    updateAuthControls(currentUser);
+
+    if (!currentUser) {
+        document.getElementById('authPopup').style.display = 'block';
+        document.getElementById('mainApp').style.display = 'none';
+    } else {
+        document.getElementById('authPopup').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+    }
+
+    if (<?php echo json_encode($loggedInUser !== null); ?>) {
+        document.getElementById('mainApp').style.display = 'block';
+    } else {
+        document.getElementById('authPopup').style.display = 'block';
+    }
 
     if (savedTheme) {
         if (savedTheme === 'dark') {
@@ -518,7 +532,7 @@ document.getElementById('chatForm').addEventListener('submit', function(e) {
     <input type="password" id="authPassword" placeholder="Password"><br><br>
     <button onclick="submitAuth('login')">Login</button>
     <button onclick="submitAuth('register')">Register</button>
-    <button onclick="hideLogin()">Cancel</button>
+    <button class="theme-toggle" onclick="toggleTheme()">Change theme</button>
 </div>
 
 </body>
