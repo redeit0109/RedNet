@@ -260,7 +260,7 @@ if (isset($_GET['fetch'])) {
 <button class="theme-toggle" onclick="toggleTheme()">Change theme</button>
 <button onclick="requestNotificationPermission()">Enable notifications</button>
 
-<div id="chat"><i>Messages loading...</i></div>
+<div id="chat"><h1><i>Messages loading...</i></h1></div>
 
 <audio id="notifySound" src="./src/sound.mp3" preload="auto"></audio>
 
